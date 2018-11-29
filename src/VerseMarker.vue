@@ -26,6 +26,8 @@
 import Verse from './components/Verse.vue'
 import AudioPlayer from './components/AudioPlayer.vue'
 import Utils from './utils/Utils.js'
+import Database from './utils/Database.js'
+import AWS from 'aws-sdk'
 
 const INIT_FILE_NAME = 'thisIsAFileThatIsntReal'
 
@@ -36,12 +38,29 @@ export default {
     data() {
         return {
             file: file,
-            verses: [0, 2.34, 4.56]
+            verses: []
         }
     },
     components: {
         Verse,
         AudioPlayer
+    },
+    mounted() {
+        Database.init()
+    },
+    watch: {
+        file() {
+            if (this.file) {
+                Database.fetchVerses({
+                    fileName: this.file.name,
+                    onComplete:(verses) => {
+                        this.verses = verses
+                    }
+                })
+            } else {
+                this.verses.splice(0, this.verses.length)
+            }
+        }
     },
     methods: {
         deleteVerse(timestamp) {
@@ -56,9 +75,9 @@ export default {
 
             var time = Utils.toTwoDecimals(this.$refs.audioPlayer.getCurrentTime())
             this.verses.push(time)
-            this.verses.sort(function(a, b) {
-                return a - b
-            })
+            this.verses.sort(Utils.arraySortFunc)
+
+            Database.saveVerse(this.file.name, time)
         },
         playVerse(timestamp) {
             this.$refs.audioPlayer.setAudioTime(timestamp)

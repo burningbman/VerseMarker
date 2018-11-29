@@ -72,7 +72,7 @@ export default {
     watch: {
         playing(value) {
             if (value) {
-                this.audio.play().catch(function(err) {
+                this.audio.play().catch(function() {
                     this.playing = false;
                 }.bind(this));
             } else {
@@ -107,7 +107,7 @@ export default {
             this.playing = false;
             this.audio.currentTime = 0;
         },
-        update(e) {
+        update() {
             this.currentSeconds = parseInt(this.audio.currentTime);
         },
         getCurrentTime() {
