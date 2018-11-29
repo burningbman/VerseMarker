@@ -11,7 +11,10 @@
 </template>
 
 <script>
+import Utils from '../utils/Utils.js'
+
 const NUDGE_VALUE = .01;
+
 export default {
     name: 'Verse',
     props: ['initialTimestamp'],
@@ -22,16 +25,13 @@ export default {
     },
     methods: {
         decrement() {
-            this.timestamp = Math.max(this.toTwoDecimals(this.timestamp - NUDGE_VALUE), 0)
+            this.timestamp = Math.max(Utils.toTwoDecimals(this.timestamp - NUDGE_VALUE), 0)
         },
         increment() {
-            this.timestamp = this.toTwoDecimals(this.timestamp + NUDGE_VALUE)
-        },
-        toTwoDecimals(number) {
-            return Math.round(number * 100) / 100
+            this.timestamp = Utils.toTwoDecimals(this.timestamp + NUDGE_VALUE)
         },
         deleteVerse() {
-            return;
+            this.$emit('delete-verse', this.timestamp)
         }
     }
 }

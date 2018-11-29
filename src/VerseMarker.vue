@@ -9,20 +9,19 @@
                 </b-form>
             </b-col>
             <b-col>
-                <b-button>Add Verse</b-button>
+                <b-button @click="addVerse">Add Verse</b-button>
             </b-col>
         </b-row>
     </b-container>
     <b-container>
-        <template v-for="verse in verses">
-            <Verse :initialTimestamp="verse"/>
-        </template>
+        <Verse v-for="verse in verses" :key="verse" :initialTimestamp="verse" v-on:delete-verse="deleteVerse" />
     </b-container>
 </div>
 </template>
 
 <script>
 import Verse from './components/Verse.vue'
+import Utils from './utils/Utils.js'
 
 export default {
     name: 'app',
@@ -34,6 +33,19 @@ export default {
     },
     components: {
         Verse
+    },
+    methods: {
+        deleteVerse(timestamp) {
+            var verseIndex = this.verses.indexOf(timestamp)
+            this.verses.splice(verseIndex, 1)
+        },
+        addVerse() {
+            var verse = Utils.toTwoDecimals(Math.random() * 100)
+            this.verses.push(verse)
+            this.verses.sort(function(a, b) {
+                return a - b
+            })
+        }
     }
 }
 </script>
