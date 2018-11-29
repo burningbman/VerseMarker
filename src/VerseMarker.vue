@@ -13,9 +13,11 @@
             </b-col>
         </b-row>
     </b-container>
-    <AudioPlayer :file="file" ref="audioPlayer"/>
+    <AudioPlayer :file="file" ref="audioPlayer" />
     <b-container>
-        <Verse v-for="verse in verses" :key="verse" :initialTimestamp="verse" v-on:delete-verse="deleteVerse" />
+        <b-row>
+            <Verse v-for="(verse, index) in verses" :index="index" :key="verse" :initialTimestamp="verse" v-on:delete-verse="deleteVerse" v-on:play-verse="playVerse"/>
+        </b-row>
     </b-container>
 </div>
 </template>
@@ -25,7 +27,9 @@ import Verse from './components/Verse.vue'
 import AudioPlayer from './components/AudioPlayer.vue'
 import Utils from './utils/Utils.js'
 
-var file = new File([''], 'temp')
+const INIT_FILE_NAME = 'thisIsAFileThatIsntReal'
+
+var file = new File([''], INIT_FILE_NAME)
 
 export default {
     name: 'VerseMarker',
@@ -45,11 +49,20 @@ export default {
             this.verses.splice(verseIndex, 1)
         },
         addVerse() {
+            if (this.file.name === INIT_FILE_NAME) {
+                alert('Choose an audio file first.')
+                return
+            }
+
             var time = Utils.toTwoDecimals(this.$refs.audioPlayer.getCurrentTime())
             this.verses.push(time)
             this.verses.sort(function(a, b) {
                 return a - b
             })
+        },
+        playVerse(timestamp) {
+            this.$refs.audioPlayer.setAudioTime(timestamp)
+            this.$refs.audioPlayer.playing = true
         }
     }
 }

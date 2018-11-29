@@ -32,9 +32,9 @@
 
 <script>
 const convertTimeHHMMSS = (val) => {
-	let hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
+    let hhmmss = new Date(val * 1000).toISOString().substr(11, 8);
 
-	return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
+    return hhmmss.indexOf("00:") === 0 ? hhmmss.substr(3) : hhmmss;
 };
 
 export default {
@@ -53,7 +53,11 @@ export default {
     }),
     computed: {
         fileName() {
-            return URL.createObjectURL(this.file)
+            if (this.file) {
+                return URL.createObjectURL(this.file)
+            } else {
+                return ''
+            }
         },
         currentTime() {
             return convertTimeHHMMSS(this.currentSeconds);
@@ -65,53 +69,65 @@ export default {
             return parseInt(this.currentSeconds / this.durationSeconds * 100);
         }
     },
-	watch: {
-		playing(value) {
-			if (value) { return this.audio.play(); }
-			this.audio.pause();
-		}
-	},
-	methods: {
-		load() {
-			if (this.audio.readyState >= 2) {
-				this.loaded = true;
-				this.durationSeconds = parseInt(this.audio.duration);
-				return this.playing = this.autoPlay;
-			}
+    watch: {
+        playing(value) {
+            if (value) {
+                this.audio.play().catch(function(err) {
+                    this.playing = false;
+                }.bind(this));
+            } else {
+                this.audio.pause();
+            }
+        }
+    },
+    methods: {
+        load() {
+            if (this.audio.readyState >= 2) {
+                this.loaded = true;
+                this.durationSeconds = parseInt(this.audio.duration);
+                return this.playing = this.autoPlay;
+            }
 
-			throw new Error('Failed to load sound file.');
-		},
-		seek(e) {
-			if (!this.playing || e.target.tagName === 'SPAN') {
-				return;
-			}
+            throw new Error('Failed to load sound file.');
+        },
+        seek(e) {
+            if (!this.playing || e.target.tagName === 'SPAN') {
+                return;
+            }
 
-			const el = e.target.getBoundingClientRect();
-			const seekPos = (e.clientX - el.left) / el.width;
+            const el = e.target.getBoundingClientRect();
+            const seekPos = (e.clientX - el.left) / el.width;
 
-			this.audio.currentTime = parseInt(this.audio.duration * seekPos);
-		},
-		stop() {
-			this.playing = false;
-			this.audio.currentTime = 0;
-		},
-		update(e) {
-			this.currentSeconds = parseInt(this.audio.currentTime);
-		},
+            this.setAudioTime(parseInt(this.audio.duration * seekPos));
+        },
+        setAudioTime(timestamp) {
+            this.audio.currentTime = parseInt(timestamp);
+        },
+        stop() {
+            this.playing = false;
+            this.audio.currentTime = 0;
+        },
+        update(e) {
+            this.currentSeconds = parseInt(this.audio.currentTime);
+        },
         getCurrentTime() {
             return this.audio.currentTime;
         }
-	},
-	created() {
-		this.innerLoop = this.loop;
-	},
-	mounted() {
-		this.audio = this.$el.querySelectorAll('audio')[0];
-		this.audio.addEventListener('timeupdate', this.update);
-		this.audio.addEventListener('loadeddata', this.load);
-		this.audio.addEventListener('pause', () => { this.playing = false; });
-		this.audio.addEventListener('play', () => { this.playing = true; });
-	}
+    },
+    created() {
+        this.innerLoop = this.loop;
+    },
+    mounted() {
+        this.audio = this.$el.querySelectorAll('audio')[0];
+        this.audio.addEventListener('timeupdate', this.update);
+        this.audio.addEventListener('loadeddata', this.load);
+        this.audio.addEventListener('pause', () => {
+            this.playing = false;
+        });
+        this.audio.addEventListener('play', () => {
+            this.playing = true;
+        });
+    }
 }
 </script>
 
@@ -176,7 +192,7 @@ $player-text-color: $player-link-color;
     background-color: $player-progress-color;
     cursor: pointer;
     height: 50%;
-    min-width: 400px;
+    min-width: 570px;
     position: relative;
 
     .player-seeker {
