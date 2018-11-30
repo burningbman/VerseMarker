@@ -5,13 +5,15 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "deploy": "vue-cli-service s3-deploy"
   },
   "dependencies": {
     "amazon-cognito-identity-js": "^3.0.3",
     "aws-sdk": "^2.366.0",
     "bootstrap-vue": "^2.0.0-rc.11",
-    "vue": "^2.5.17"
+    "vue": "^2.5.17",
+    "vue-cli-plugin-s3-deploy": "^3.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.2.0",
