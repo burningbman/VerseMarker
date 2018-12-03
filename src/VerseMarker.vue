@@ -16,7 +16,7 @@
     <AudioPlayer :file="file" ref="audioPlayer" />
     <b-container>
         <b-row>
-            <Verse v-for="(verse, index) in verses" :index="index" :key="verse" :initialTimestamp="verse" v-on:delete-verse="deleteVerse" v-on:play-verse="playVerse"/>
+            <Verse v-for="(verse, index) in verses" :key="verse.id" :verse="verse" v-on:delete-verse="deleteVerse" v-on:play-verse="playVerse" :file="file" :index="index + 1"/>
         </b-row>
     </b-container>
 </div>
@@ -28,6 +28,7 @@ import AudioPlayer from './components/AudioPlayer.vue'
 import Utils from './utils/Utils.js'
 import Database from './utils/Database.js'
 import AWS from 'aws-sdk'
+import uuid from 'uuid'
 
 const INIT_FILE_NAME = 'thisIsAFileThatIsntReal'
 
@@ -63,8 +64,8 @@ export default {
         }
     },
     methods: {
-        deleteVerse(timestamp) {
-            var verseIndex = this.verses.indexOf(timestamp)
+        deleteVerse(verse) {
+            var verseIndex = this.verses.indexOf(verse.timestamp)
             this.verses.splice(verseIndex, 1)
         },
         addVerse() {
@@ -74,13 +75,18 @@ export default {
             }
 
             var time = Utils.toTwoDecimals(this.$refs.audioPlayer.getCurrentTime())
-            this.verses.push(time)
+            var verse = {
+                id: uuid(),
+                timestamp: time,
+                book: this.file.name
+            }
+            this.verses.push(verse)
             this.verses.sort(Utils.arraySortFunc)
 
-            Database.saveVerse(this.file.name, time)
+            Database.saveVerse(verse)
         },
-        playVerse(timestamp) {
-            this.$refs.audioPlayer.setAudioTime(timestamp)
+        playVerse(verse) {
+            this.$refs.audioPlayer.setAudioTime(verse.timestamp)
             this.$refs.audioPlayer.playing = true
         }
     }

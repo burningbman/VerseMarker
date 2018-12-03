@@ -3,6 +3,6 @@ export default {
         return Math.round(number * 100) / 100
     },
     arraySortFunc(a, b) {
-        return a - b
+        return a.timestamp - b.timestamp
     }
 }

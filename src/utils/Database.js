@@ -20,15 +20,38 @@ export default {
 
         db = new AWS.DynamoDB();
     },
-    saveVerse(fileName, timestamp) {
+    /**
+     * [saveVerse description]
+     * @param {Object} options options
+     * @param {String} [options.id] id
+     * @param {String} options.book file name for now
+     * @param {Integer} options.timestamp timestamp
+     */
+    saveVerse(options) {
         db.putItem({
             TableName: TABLE_NAME,
             Item: {
-                fileName: {
-                    S: fileName
+                id: {
+                    S: options.id
+                },
+                book: {
+                    S: options.book
                 },
                 timestamp: {
-                    N: timestamp.toString()
+                    N: options.timestamp.toString()
+                }
+            }
+        }, basicCallback)
+    },
+    deleteVerse(options) {
+        db.deleteItem({
+            TableName: TABLE_NAME,
+            Key: {
+                book: {
+                    S: options.book
+                },
+                id: {
+                    S: options.id
                 }
             }
         }, basicCallback)
@@ -36,9 +59,9 @@ export default {
     fetchVerses(options) {
         db.scan({
             TableName: TABLE_NAME,
-            FilterExpression: "fileName = :file",
+            FilterExpression: "book = :book",
             ExpressionAttributeValues: {
-                ":file": {
+                ":book": {
                     S: options.fileName
                 }
             }
@@ -54,7 +77,13 @@ export default {
     parseVerses(data) {
         var verseArray = []
         for (var i = 0; i < data.Count; i++) {
-            verseArray.push(parseFloat(data.Items[i].timestamp.N))
+            var item = data.Items[i];
+            var verse = {
+                id: item.id.S,
+                timestamp: parseFloat(item.timestamp.N),
+                book: item.book.S
+            }
+            verseArray.push(verse)
         }
         verseArray.sort(Utils.arraySortFunc)
         return verseArray

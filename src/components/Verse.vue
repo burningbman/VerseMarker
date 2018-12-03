@@ -3,7 +3,7 @@
     <label class="mr-2 ml-5 verse-number">{{index}}.</label>
     <b-button class="mr-1" variant="success" @click="playVerse">></b-button>
     <b-button class="mr-1" @click="decrement">-</b-button>
-    <b-form-input class="mr-1 verse-input" v-model="timestamp" />
+    <b-form-input class="mr-1 verse-input" v-model="verse.timestamp" />
     <b-button class="mr-1" @click="increment">+</b-button>
     <b-button class="mr-1" variant="danger" @click="deleteVerse">X</b-button>
 </b-form>
@@ -11,29 +11,31 @@
 
 <script>
 import Utils from '../utils/Utils.js'
+import Database from '../utils/Database.js'
 
 const NUDGE_VALUE = .01;
 
 export default {
     name: 'Verse',
-    props: ['initialTimestamp', 'index'],
-    data() {
-        return {
-            timestamp: Number(this.initialTimestamp)
-        }
-    },
+    props: ['verse', 'file', 'index'],
     methods: {
         decrement() {
-            this.timestamp = Math.max(Utils.toTwoDecimals(this.timestamp - NUDGE_VALUE), 0)
+            this.verse.timestamp = Math.max(Utils.toTwoDecimals(parseFloat(this.verse.timestamp) - NUDGE_VALUE), 0)
+            this.saveVerse()
         },
         increment() {
-            this.timestamp = Utils.toTwoDecimals(this.timestamp + NUDGE_VALUE)
+            this.verse.timestamp = Utils.toTwoDecimals(parseFloat(this.verse.timestamp) + NUDGE_VALUE)
+            this.saveVerse()
         },
         deleteVerse() {
-            this.$emit('delete-verse', this.timestamp)
+            this.$emit('delete-verse', this.verse)
+            Database.deleteVerse(this.verse)
         },
         playVerse() {
-            this.$emit('play-verse', this.timestamp)
+            this.$emit('play-verse', this.verse)
+        },
+        saveVerse() {
+            Database.saveVerse(this.verse)
         }
     }
 }
