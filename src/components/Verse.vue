@@ -13,18 +13,16 @@
 import Utils from '../utils/Utils.js'
 import Database from '../utils/Database.js'
 
-const NUDGE_VALUE = .01;
-
 export default {
     name: 'Verse',
-    props: ['verse', 'file', 'index'],
+    props: ['verse', 'file', 'index', 'nudge'],
     methods: {
         decrement() {
-            this.verse.timestamp = Math.max(Utils.toTwoDecimals(parseFloat(this.verse.timestamp) - NUDGE_VALUE), 0)
+            this.verse.timestamp = Math.max(Utils.toTwoDecimals(parseFloat(this.verse.timestamp) - this.nudge), 0)
             this.saveVerse()
         },
         increment() {
-            this.verse.timestamp = Utils.toTwoDecimals(parseFloat(this.verse.timestamp) + NUDGE_VALUE)
+            this.verse.timestamp = Utils.toTwoDecimals(parseFloat(this.verse.timestamp) + this.nudge)
             this.saveVerse()
         },
         deleteVerse() {
@@ -45,7 +43,12 @@ export default {
 .form-inline .form-control.verse-input {
     width: 75px;
 }
+
 .verse-number {
     width: 30px;
+}
+
+.active {
+    background-color: yellow;
 }
 </style>

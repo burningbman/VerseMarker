@@ -13,10 +13,17 @@
             </b-col>
         </b-row>
     </b-container>
-    <AudioPlayer :file="file" ref="audioPlayer" />
+    <AudioPlayer :file="file" ref="audioPlayer" v-on:audio-update="onAudioUpdate" />
     <b-container>
+        <b-row class="justify-content-md-center">
+            <b-form inline>
+                <!--<label>Nudge value:</label>
+                <b-form-input class="nudge m-2" v-model="nudgeAmount"></b-form-input>-->
+                <b-form-checkbox v-model="checking" class="mb-2 mr-sm-2 mb-sm-0">Checking Playback</b-form-checkbox>
+            </b-form>
+        </b-row>
         <b-row>
-            <Verse v-for="(verse, index) in verses" :key="verse.id" :verse="verse" v-on:delete-verse="deleteVerse" v-on:play-verse="playVerse" :file="file" :index="index + 1"/>
+            <Verse v-for="(verse, index) in verses" :key="verse.id" :verse="verse" v-on:delete-verse="deleteVerse" v-on:play-verse="playVerse" :file="file" :index="index + 1" :nudge="nudgeAmount" />
         </b-row>
     </b-container>
 </div>
@@ -27,7 +34,6 @@ import Verse from './components/Verse.vue'
 import AudioPlayer from './components/AudioPlayer.vue'
 import Utils from './utils/Utils.js'
 import Database from './utils/Database.js'
-import AWS from 'aws-sdk'
 import uuid from 'uuid'
 
 const INIT_FILE_NAME = 'thisIsAFileThatIsntReal'
@@ -39,7 +45,10 @@ export default {
     data() {
         return {
             file: file,
-            verses: []
+            verses: [],
+            checking: false,
+            nudgeAmount: 0.01,
+            activeVerseIndex: -1
         }
     },
     components: {
@@ -54,12 +63,30 @@ export default {
             if (this.file) {
                 Database.fetchVerses({
                     fileName: this.file.name,
-                    onComplete:(verses) => {
+                    onComplete: (verses) => {
                         this.verses = verses
                     }
                 })
             } else {
                 this.verses.splice(0, this.verses.length)
+            }
+        },
+        activeVerseIndex(newVal, oldVal) {
+            var oldVerse = this.$el.getElementsByClassName('verse')[oldVal]
+            if (oldVerse) {
+                oldVerse.classList.remove('active')
+            }
+
+            var newVerse = this.$el.getElementsByClassName('verse')[newVal]
+            if (newVerse) {
+                newVerse.classList.add('active')
+            }
+        },
+        checking(newVal) {
+            if (newVal) {
+                this.onAudioUpdate(this.$refs.audioPlayer.audio.currentTime)
+            } else {
+                this.activeVerseIndex = -1
             }
         }
     },
@@ -88,6 +115,22 @@ export default {
         playVerse(verse) {
             this.$refs.audioPlayer.setAudioTime(verse.timestamp)
             this.$refs.audioPlayer.playing = true
+        },
+        onAudioUpdate(time) {
+            if (!this.checking) {
+                return
+            }
+
+            var currentVerse = -1
+
+            this.verses.forEach(function(verse, index) {
+                if (verse.timestamp > time) {
+                    return
+                }
+                currentVerse = index
+            })
+
+            this.activeVerseIndex = currentVerse
         }
     }
 }
@@ -101,5 +144,9 @@ export default {
     text-align: center;
     color: #2c3e50;
     margin-top: 60px;
+}
+
+.form-inline .form-control.nudge {
+    width: 75px;
 }
 </style>

@@ -109,6 +109,7 @@ export default {
         },
         update() {
             this.currentSeconds = parseInt(this.audio.currentTime);
+            this.$emit('audio-update', this.audio.currentTime);
         },
         getCurrentTime() {
             return this.audio.currentTime;
