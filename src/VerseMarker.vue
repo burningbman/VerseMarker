@@ -3,23 +3,31 @@
     <h1>Verse Marker</h1>
     <b-container>
         <b-row class="justify-content-md-center">
-            <b-col cols="6">
+            <b-col cols="7">
                 <b-form>
-                    <b-form-file v-model="file" accept=".mp3" placeholder="Choose a file..."></b-form-file>
+                    <b-form-file v-model="file" accept=".mp3" placeholder="Choose an audio file..."></b-form-file>
                 </b-form>
-            </b-col>
-            <b-col md="auto">
-                <b-button @click="addVerse">Add Verse</b-button>
             </b-col>
         </b-row>
     </b-container>
-    <AudioPlayer :file="file" ref="audioPlayer" v-on:audio-update="onAudioUpdate" />
-    <b-container>
+    <b-container v-if="file.name">
+        <b-row class="justify-content-md-center mt-2">
+            <b-form class="mt-2">
+                <label>Playback Mode:</label>
+                <b-form-radio-group v-model="playbackMode">
+                    <b-form-radio value="normal">Normal</b-form-radio>
+                    <b-form-radio value="checking">Checking</b-form-radio>
+                </b-form-radio-group>
+            </b-form>
+            <AudioPlayer :file="file" ref="audioPlayer" v-on:audio-update="onAudioUpdate" />
+        </b-row>
         <b-row class="justify-content-md-center">
             <b-form inline>
-                <!--<label>Nudge value:</label>
-                <b-form-input class="nudge m-2" v-model="nudgeAmount"></b-form-input>-->
-                <b-form-checkbox v-model="checking" class="mb-2 mr-sm-2 mb-sm-0">Checking Playback</b-form-checkbox>
+                <b-button class="mr-2" @click="addVerse">Add Verse</b-button>
+                <label>Nudge value:</label>
+                <b-form-input type="number" class="nudge m-2" v-model="nudgeAmount" v-on:change="formatNudgeAmount"></b-form-input>
+                <label>Pause value:</label>
+                <b-form-input type="number" class="nudge m-2" v-model="pauseAmount" v-on:change="formatPauseAmount"></b-form-input>
             </b-form>
         </b-row>
         <b-row>
@@ -36,9 +44,7 @@ import Utils from './utils/Utils.js'
 import Database from './utils/Database.js'
 import uuid from 'uuid'
 
-const INIT_FILE_NAME = 'thisIsAFileThatIsntReal'
-
-var file = new File([''], INIT_FILE_NAME)
+var file = new File([''], '')
 
 export default {
     name: 'VerseMarker',
@@ -46,8 +52,9 @@ export default {
         return {
             file: file,
             verses: [],
-            checking: false,
+            playbackMode: 'normal',
             nudgeAmount: 0.01,
+            pauseAmount: 0.5,
             activeVerseIndex: -1
         }
     },
@@ -82,8 +89,8 @@ export default {
                 newVerse.classList.add('active')
             }
         },
-        checking(newVal) {
-            if (newVal) {
+        playbackMode(newVal) {
+            if (newVal === 'checking') {
                 this.onAudioUpdate(this.$refs.audioPlayer.audio.currentTime)
             } else {
                 this.activeVerseIndex = -1
@@ -96,7 +103,7 @@ export default {
             this.verses.splice(verseIndex, 1)
         },
         addVerse() {
-            if (this.file.name === INIT_FILE_NAME) {
+            if (this.file.name === '') {
                 alert('Choose an audio file first.')
                 return
             }
@@ -117,20 +124,33 @@ export default {
             this.$refs.audioPlayer.playing = true
         },
         onAudioUpdate(time) {
-            if (!this.checking) {
+            if (this.playbackMode === 'normal') {
                 return
             }
 
             var currentVerse = -1
 
-            this.verses.forEach(function(verse, index) {
+            this.verses.forEach(function(verse) {
                 if (verse.timestamp > time) {
                     return
                 }
-                currentVerse = index
+                currentVerse++
             })
 
+            if (currentVerse !== this.activeVerseIndex && currentVerse !== -1) {
+                this.$refs.audioPlayer.audio.pause()
+                setTimeout(function() {
+                    this.$refs.audioPlayer.audio.play()
+                }.bind(this), this.pauseAmount * 1000)
+            }
+
             this.activeVerseIndex = currentVerse
+        },
+        formatNudgeAmount(value) {
+            this.nudgeAmount = parseFloat(value)
+        },
+        formatPauseAmount(value) {
+            this.pauseAmount = parseFloat(value)
         }
     }
 }

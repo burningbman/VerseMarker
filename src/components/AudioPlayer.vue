@@ -193,7 +193,7 @@ $player-text-color: $player-link-color;
     background-color: $player-progress-color;
     cursor: pointer;
     height: 50%;
-    min-width: 570px;
+    min-width: 330px;
     position: relative;
 
     .player-seeker {

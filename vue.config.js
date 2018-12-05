@@ -17,7 +17,8 @@ module.exports = {
       pwaFiles: 'service-worker.js',
       enableCloudfront: false,
       uploadConcurrency: 5,
-      pluginVersion: '3.0.0'
+      pluginVersion: '3.0.0',
+      cacheControl: "max-age=86400"
     }
   }
 }
