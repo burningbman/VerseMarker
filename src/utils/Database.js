@@ -3,7 +3,7 @@ import AWS from 'aws-sdk'
 import Utils from './Utils.js'
 const TABLE_NAME = 'verseMarker'
 
-function basicCallback(err, data) {
+function basicCallback(err/*, data*/) {
     if (err) {
         alert('error')
         console.log(err)

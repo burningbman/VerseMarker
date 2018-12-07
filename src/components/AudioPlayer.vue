@@ -101,7 +101,7 @@ export default {
             this.setAudioTime(parseInt(this.audio.duration * seekPos));
         },
         setAudioTime(timestamp) {
-            this.audio.currentTime = parseInt(timestamp);
+            this.audio.currentTime = timestamp;
         },
         stop() {
             this.playing = false;
