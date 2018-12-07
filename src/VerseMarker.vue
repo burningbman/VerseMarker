@@ -10,7 +10,7 @@
             </b-col>
         </b-row>
     </b-container>
-    <b-container v-if="file.name">
+    <b-container v-if="file && file.name">
         <b-row class="justify-content-md-center mt-2">
             <b-form class="mt-2">
                 <label>Playback Mode:</label>
@@ -98,9 +98,8 @@ export default {
         }
     },
     methods: {
-        deleteVerse(verse) {
-            var verseIndex = this.verses.indexOf(verse.timestamp)
-            this.verses.splice(verseIndex, 1)
+        deleteVerse(verseToDelete) {
+            this.verses = this.verses.filter(verse => verse.id !== verseToDelete.id)
         },
         addVerse() {
             if (this.file.name === '') {
